@@ -103,6 +103,7 @@ class SampleConfig(base_config.BaseConfig):
   noise_scale: float = 1.003
   step_scale: float = 1.5
   num_samples: int = 1
+  predefined_positions: Optional[jnp.ndarray] = None
 
 
 class DiffusionHead(hk.Module):
