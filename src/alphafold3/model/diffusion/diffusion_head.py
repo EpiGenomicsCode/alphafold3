@@ -356,9 +356,13 @@ def sample(
   noise_levels = noise_schedule(jnp.linspace(0, 1, config.steps + 1))
 
   key, noise_key = jax.random.split(key)
-  positions = jax.random.normal(noise_key, (num_samples,) + mask.shape + (3,))
-  positions *= noise_levels[0]
-
+  
+  if config.predefined_positions is not None:
+      positions = config.predefined_positions
+  else:
+      positions = jax.random.normal(noise_key, (num_samples,) + mask.shape + (3,))
+      positions *= noise_levels[0]
+    
   init = (
       jax.random.split(key, num_samples),
       positions,
