@@ -53,6 +53,11 @@ import haiku as hk
 import jax
 from jax import numpy as jnp
 import numpy as np
+from alphafold3.utils.pdb_parser import (
+    get_sequence_from_pdb,
+    parse_pdb_to_predefined_positions,
+    generate_template_features
+)
 
 
 _HOME_DIR = pathlib.Path(os.environ.get('HOME'))
@@ -571,6 +576,35 @@ def process_fold_input(
 
   print(f'Done processing fold input {fold_input.name}.')
   return output
+
+def load_predefined_structure(pdb_path: str) -> Dict[str, Any]:
+    """
+    Load a predefined PDB structure and prepare it for AF3.
+
+    Args:
+        pdb_path (str): Path to the PDB file.
+
+    Returns:
+        Dict[str, Any]: Dictionary containing the sequence and predefined positions.
+    """
+    sequence = get_sequence_from_pdb(pdb_path)
+    all_atom_positions, all_atom_masks = get_atom_positions_and_masks(pdb_path)
+    predefined_positions = parse_pdb_to_predefined_positions(pdb_path)
+
+    # Generate additional template features if required
+    residue_mask = [True] * len(sequence)  # Modify based on your criteria
+    template_features = generate_template_features(
+        seq=sequence,
+        all_atom_positions=all_atom_positions,
+        all_atom_masks=all_atom_masks,
+        residue_mask=residue_mask
+    )
+
+    return {
+        'sequence': sequence,
+        'predefined_positions': predefined_positions,
+        'template_features': template_features
+    }
 
 
 def main(_):

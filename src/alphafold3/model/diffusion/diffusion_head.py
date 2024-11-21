@@ -24,7 +24,7 @@ import chex
 import haiku as hk
 import jax
 import jax.numpy as jnp
-
+from typing import Optional
 
 # Carefully measured by averaging multimer training set.
 SIGMA_DATA = 16.0
