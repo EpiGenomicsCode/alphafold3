@@ -90,17 +90,17 @@ def _get_protein_msa_and_templates(
     paired_protein_msa_future = executor.submit(
         msa.Msa.from_multiple_msas, msas=[uniprot_msa], deduplicate=False
     )
-    filter_config = templates_config.filter_config
     templates_future = executor.submit(
         templates_lib.Templates.from_seq_and_a3m,
         query_sequence=sequence,
         msa_a3m=uniref90_msa.to_a3m(),
-        max_template_date=filter_config.max_template_date,
+        max_template_date=templates_config.filter_config.max_template_date,
         database_path=templates_config.template_tool_config.database_path,
         hmmsearch_config=templates_config.template_tool_config.hmmsearch_config,
         max_a3m_query_sequences=None,
         chain_poly_type=mmcif_names.PROTEIN_CHAIN,
         structure_store=structure_stores.StructureStore(pdb_database_path),
+        filter_config=templates_config.filter_config,
     )
   unpaired_protein_msa = unpaired_protein_msa_future.result()
   paired_protein_msa = paired_protein_msa_future.result()
@@ -111,22 +111,7 @@ def _get_protein_msa_and_templates(
       time.time() - templates_start_time,
       sequence,
   )
-
-  logging.info('Filtering protein templates for sequence %s', sequence)
-  filter_start_time = time.time()
-  filtered_templates = protein_templates.filter(
-      max_subsequence_ratio=filter_config.max_subsequence_ratio,
-      min_align_ratio=filter_config.min_align_ratio,
-      min_hit_length=filter_config.min_hit_length,
-      deduplicate_sequences=filter_config.deduplicate_sequences,
-      max_hits=filter_config.max_hits,
-  )
-  logging.info(
-      'Filtering protein templates took %.2f seconds for sequence %s',
-      time.time() - filter_start_time,
-      sequence,
-  )
-  return unpaired_protein_msa, paired_protein_msa, filtered_templates
+  return unpaired_protein_msa, paired_protein_msa, protein_templates
 
 
 # Cache to avoid re-running the Nhmmer for the same sequence in homomers.
